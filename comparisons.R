@@ -2,6 +2,7 @@ library(Rcpp)
 library(RcppArmadillo)
 library(rbenchmark)
 require(fftwtools)
+library(mcmcse)
 ##########################################################
 ### Fast HAC from paper #####
 ##########################################################
@@ -61,15 +62,17 @@ sourceCpp("msvec_new_3.cpp")
 ##########################################################
 sourceCpp("msvec_new_4.cpp")
 
-N <- 1e3
-p <- 3
+N <- 1e4
+p <- 20
 mcond <- matrix(rnorm(N*p), ncol = p, nrow = N)
 mcond <- scale(mcond, center = TRUE, scale = FALSE)
 
-b <- 100
+b <- 50
 
 # testing if equal, may take time, so commented out
-all.equal(HAC.new(mcond, method = "bartlett", b = b), msveC_new_1(chain = mcond, b = b), msveC_new_2(chain = mcond, b = b))
+#all.equal(HAC.new(mcond, method = "bartlett", b = b), msveC_new_1(chain = mcond, b = b), msveC_new_2(chain = mcond, b = b))
+
+benchmark(mcse.multi(mcond, method = "bartlett", size = b, r = 1), msveC_new_2(chain = mcond, b = b), replications = 20)
 
 benchmark(HAC.new(mcond, method = "bartlett", b = b), msveC_new_1(chain = mcond, b = b), msveC_new_2(chain = mcond, b = b), replications = 100)
 
