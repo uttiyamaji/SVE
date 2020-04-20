@@ -9,17 +9,14 @@ mat roncalli(mat M, int b){
   int n = M.n_rows;
   int p = M.n_cols;
 
-  mat dummy(p,p), out(p,p);
-  dummy.zeros();
+  mat out(p,p);
   out.zeros();
+  mat place_h(n,p);
 
   for(int s = 1; s < b; s++){
-    mat place_h(n,p);
     place_h.zeros();
     place_h.tail_rows(n-s) = M.rows(0,n-s-1);
-
-    dummy =  trans(place_h)*M;
-    out += dummy;
+    out +=  trans(place_h)*M;
   }
 
   out += trans(M)*M;
