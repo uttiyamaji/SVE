@@ -3,8 +3,6 @@
 # function to calculate SVE 
 HAC2 <- function (mcond , method , bw)
 {
-  require ( fftwtools )
-  
   dimmcond <- dim( mcond )
   Nlen <- dimmcond [1]
   qlen <- dimmcond [2]
@@ -25,6 +23,33 @@ HAC2 <- function (mcond , method , bw)
   FF <- FF [1: Nlen ,]
   return ((t( mcond ) %*% FF) / Nlen )
 }
+
+# Faster when n is large
+HAC3 <- function (mcond , method , bw)
+{
+  # require ( fftwtools )
+  
+  dimmcond <- dim( mcond )
+  Nlen <- dimmcond [1]
+  qlen <- dimmcond [2]
+  
+  ww = numeric(Nlen)
+  ww <- kweightsHAC ( kernel = method , Nlen , bw)
+  
+  ww <- c(1, ww [1:( Nlen -1)], 0, ww [( Nlen -1) :1])
+  
+  ww <- Re( fftw_r2c(ww))            ### change
+  
+  FF = matrix(0,ncol = qlen, nrow = 2*Nlen)  ### change
+  FF[1:Nlen,] <- mcond                      ### change
+  
+  FF <- mvfftw_r2c (FF)          ### change
+  FF <- FF* matrix ( ww , nrow = 2*Nlen, ncol = qlen ) ### change
+  FF <-  mvfftw_c2r(FF) / (2* Nlen )  ### change
+  # FF <- FF [1: Nlen ,]
+  return ((t( mcond ) %*% FF [1: Nlen ,]) / Nlen )
+}
+
 
 
 
